@@ -69,5 +69,4 @@ function drush_islandora_book_batch_preprocess() {
 
   // Pass the preprocessor off to run.
   $preprocessed = islandora_batch_handle_preprocessor($preprocessor);
-
 }
