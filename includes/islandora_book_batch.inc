@@ -57,14 +57,14 @@ class IslandoraBookBatch extends IslandoraScanBatch {
         // Set pages ready to go.
         db_update('islandora_batch_state')
           ->fields(array(
-            'state' => 1,
+            'state' => ISLANDORA_BATCH_STATE__READY,
           ))
           ->condition('id', $children, 'IN')
           ->execute();
         // Set book ready to go (after children, that is).
         db_update('islandora_batch_state')
           ->fields(array(
-            'state' => 2,
+            'state' => ISLANDORA_BATCH_STATE__PENDING_CHILDREN,
           ))
           ->condition('id', $object->id)
           ->execute();
@@ -78,7 +78,7 @@ class IslandoraBookBatch extends IslandoraScanBatch {
 class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
   public function initial_batch_state() {
     // Not ready until we've added the pages.
-    return 0;
+    return ISLANDORA_BATCH_STATE__NOT_READY;
   }
 
   public function get_children(IslandoraTuque $connection) {
@@ -116,8 +116,7 @@ class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
       $this->ingestDatastream($obj_datastream);
     }
 
-    // XXX: Should probably use constants...
-    return 3;
+    return ISLANDORA_BATCH_STATE__DONE;
   }
 
   protected function add_relationships() {
@@ -219,7 +218,7 @@ class IslandoraBookPageBatchObject extends IslandoraBookBookBatchObject {
 
   public function initial_batch_state() {
     // Not ready.
-    return 0;
+    return ISLANDORA_BATCH_STATE__DONE;
   }
 
   protected function add_relationships() {
