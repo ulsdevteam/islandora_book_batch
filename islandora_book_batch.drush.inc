@@ -26,8 +26,10 @@ function islandora_book_batch_drush_command() {
       ),
       'parent' => array(
         'description' => 'The collection to which the generated items should ' .
-          'be added. Defaults to the root Islandora repository PID. Only ' .
-          'applies to the "book" level object.',
+          'be added.  Only applies to the "book" level object. If ' .
+          '"directory" and the directory containing the book description is ' .
+          'a valid PID, it will be set as the parent. If this is specified ' .
+          'and itself is a PID, all books will be related to the given PID.',
         'value' => 'optional'
       ),
       'parent_relationship_uri' => array(
@@ -38,6 +40,23 @@ function islandora_book_batch_drush_command() {
       'parent_relationship_pred' => array(
         'description' => 'The predicate of the relationship to the parent. ' .
           'Defaults to "isMemberOfCollection".',
+        'value' => 'optional',
+      ),
+      'create_pdfs' => array(
+        'description' => 'A flag to cause PDFs to be created in books. Page ' .
+          'PDF creation is dependant on the configuration within Drupal ' .
+          'proper.'
+        'value' => 'optional'
+      ),
+      'email_admin' => array(
+        'description' => 'A flag to notify the site admin when the book is ' .
+          'fully ingested.'
+        'value' => 'optional',
+      ),
+      'wait_for_metadata' => array(
+        'description' => 'A flag to indicate that we should hold off on ' .
+          'trying to ingest books until we have metadata available for them' .
+          'at the book level.'
         'value' => 'optional',
       ),
     ),
@@ -53,9 +72,12 @@ function drush_islandora_book_batch_preprocess() {
   $parameters = array(
     'type' => drush_get_option('type'),
     'target' => drush_get_option('target'),
-    'parent' => drush_get_option('parent', variable_get('islandora_repository_pid', 'islandora:root')),
+    'parent' => drush_get_option('parent', NULL),
     'parent_relationship_uri' => drush_get_option('parent_relationship_uri', 'info:fedora/fedora-system:def/relations-external#'),
     'parent_relationship_pred' => drush_get_option('parent_relationship_pred', 'isMemberOfCollection'),
+    'create_pdfs' => drush_get_option('create_pdfs', FALSE),
+    'email_admin' => drush_get_option('email_admin', FALSE),
+    'wait_for_metadata' => drush_get_option('wait_for_metadata', FALSE),
   );
 
   if ($content_models = drush_get_option('content_models', FALSE)) {

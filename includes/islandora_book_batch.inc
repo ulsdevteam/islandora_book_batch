@@ -167,6 +167,90 @@ EOXML;
     return $this['MODS']->content;
   }
 
+  /**
+   * Transform from --METADATA--.{mrc,xml} to MODS.
+   *
+   * @param FedoraDatastream $datastream
+   *   
+   */
+  protected function get_mods_from_general_source(FedoraDatastream $datastream) {
+    $meta = $this->object_info['.']['--METADATA--'];
+    $ext = strtolower(pathinfo($meta->filename, PATHINFO_EXTENSION));
+
+    if ($ext == 'xml') {
+      $dir = drupal_get_path('module', 'islandora_batch');
+      $xml = file_get_contents($meta->uri);
+
+      if ($xml) {
+        $s_xml = new SimpleXMLElement($xml);
+    //   MODS, set
+        if ($s_xml->getName() == 'mods') {
+          // XXX: Should probably create a resource entry.
+          $datastream->setContentFromFile($meta->uri, FALSE);
+        }
+    //   MARCXML, transform to MODS and set
+        elseif ($s_xml->getName() == 'record') {
+          $datastream->content = static::run_xsl_transform(array(
+            'input' => $xml,
+            'xsl' => $dir . '/transforms/MARC21slim2MODS3-4.xsl',
+          ));
+        }
+    //   DC, transform to MODS and set
+        elseif ($s_xml->getName() == 'dc') {
+          $datastream->content = static::run_xsl_transform(array(
+            'input' => $xml,
+            'xsl' => $dir . '/transforms/simpleDC2MODS.xsl',
+          ));
+        }
+    //   Unrecognized format...
+        else {
+          // Do nothing?
+        }
+      }
+    }
+    elseif ($ext == 'mrc') {
+      // Generate some MODS from binary MARC.
+
+      // Get the java executable.
+      $java = variable_get('islandora_batch_java', 'java');
+      $temp_file_marc = tempnam('/tmp', 'binmrc');
+      $temp_file_mods = tempnam('/tmp', 'mods');
+
+      // Copy the file, so we're sure it's accessible on the filesystem.
+      copy($meta->uri, $temp_file_marc);
+      $absolute = realpath($dir);
+
+      // The command to run.
+      $command = "$java -cp $absolute/transforms/marcxml/marcxml.jar:$absolute/transforms/marcxml/marc4j.jar $temp_file_marc $temp_file_mods";
+
+      // Run the command.
+      $proc = popen($command, 'r');
+      pclose($proc);
+
+      // Load the output into a DOMDocument.
+      $doc = new DOMDocument();
+      $doc->load($temp_file_mods);
+
+      // Drop the temp.
+      unlink($temp_file_marc);
+      unlink($temp_file_mods);
+
+      if ($mods_docs->length > 0) {
+        // Grab the first.
+        $mods = new DOMDocument();
+        $mods_node = $mods_docs->item(0);
+        $mods_node =  $mods->importNode($mods_node, TRUE);
+        $mods->appendChild($mods_node);
+
+        // TODO: Transform dates to Solr format...  Or should this be left to
+        //   a core hook?
+
+        // And put the content into the datastream.
+        $datastream->content = $mods->saveXML();
+      }
+    }
+  }
+
   protected function get_dc() {
     if (!isset($this['DC'])) {
       // Create the DC datastream on this object.
@@ -178,7 +262,8 @@ EOXML;
         $dc_datastream->setContentFromFile($this->object_info['xml']->uri, FALSE);
       }
       elseif (isset($this->object_info['.']['--METADATA--'])) {
-        // TODO: If --METADATA-- contains DC directly, use it.
+        // If --METADATA-- contains DC directly, use it.
+        $this->get_dc_from_general_source($dc_datastream);
       }
 
       // Get the DC by transforming from MODS.
@@ -198,6 +283,30 @@ EOXML;
     }
 
     return $this['DC']->content;
+  }
+
+  /**
+   * If --METADATA--.xml happens to be DC, grab it...
+   *
+   * ... otherwise, we'll let the MODS implementation transform it.
+   *
+   * @param FedoraDatastream $datastream
+   *   The datastream to which we should add the metadata.
+   */
+  protected function get_dc_from_general_source(FedoraDatastream $datastream) {
+    $meta = $this->object_info['.']['--METADATA--'];
+
+    if ('xml' == pathinfo($meta->filename, PATHINFO_EXTENSION)) {
+      $xml = file_get_contents($meta->uri);
+
+      if ($xml) {
+        $s_xml = new SimpleXMLElement($xml);
+        if ($s_xml->getName() == 'dc') {
+          // XXX: Should probably create a resource entry.
+          $dc_datastream->setContentFromFile($meta->uri, FALSE);
+        }
+      }
+    }
   }
 }
 
