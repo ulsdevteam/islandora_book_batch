@@ -102,9 +102,8 @@ class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
     $this->get_dc();
 
     // Add other assets...
-    // Skip MODS and DC, 'cause they get handled in other functions.
-    $skip = array('MODS', 'DC');
-    $skip = array_map(NULL, $skip);
+    // Skip MODS and DC (and --METADATA--), 'cause they get handled in other functions.
+    $skip = drupal_map_assoc(array('MODS', 'DC', '--METADATA--'));
 
     foreach (array_diff_key($this->object_info['.'], $skip) as $dsid => $obj) {
       $obj_datastream = $this->constructDatastream($dsid);
@@ -144,7 +143,8 @@ class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
         ));
       }
       elseif (isset($this->object_info['.']['--METADATA--'])) {
-        // TODO: Detect type of contents, and transform.
+        // Detect type of contents, and transform.
+        $this->get_mods_from_general_source($mods_datastream);
       }
 
       if (!isset($mods_datastream->content)) {
@@ -173,12 +173,11 @@ EOXML;
    * @param FedoraDatastream $datastream
    *   
    */
-  protected function get_mods_from_general_source(FedoraDatastream $datastream) {
+  protected function get_mods_from_general_source(AbstractDatastream $datastream) {
     $meta = $this->object_info['.']['--METADATA--'];
     $ext = strtolower(pathinfo($meta->filename, PATHINFO_EXTENSION));
-
+    $dir = drupal_get_path('module', 'islandora_batch');
     if ($ext == 'xml') {
-      $dir = drupal_get_path('module', 'islandora_batch');
       $xml = file_get_contents($meta->uri);
 
       if ($xml) {
@@ -213,6 +212,7 @@ EOXML;
 
       // Get the java executable.
       $java = variable_get('islandora_batch_java', 'java');
+
       $temp_file_marc = tempnam('/tmp', 'binmrc');
       $temp_file_mods = tempnam('/tmp', 'mods');
 
@@ -221,7 +221,7 @@ EOXML;
       $absolute = realpath($dir);
 
       // The command to run.
-      $command = "$java -cp $absolute/transforms/marcxml/marcxml.jar:$absolute/transforms/marcxml/marc4j.jar $temp_file_marc $temp_file_mods";
+      $command = "$java -cp $absolute/transforms/marcxml/marcxml.jar:$absolute/transforms/marcxml/marc4j.jar gov.loc.marcxml.MARC2MODS $temp_file_marc $temp_file_mods";
 
       // Run the command.
       $proc = popen($command, 'r');
@@ -234,6 +234,10 @@ EOXML;
       // Drop the temp.
       unlink($temp_file_marc);
       unlink($temp_file_mods);
+
+      // The transformation produces a collection of mods docs (even if there's
+      //   only one)...  Let's grab the first one.
+      $mods_docs = $doc->getElementsByTagName('mods');
 
       if ($mods_docs->length > 0) {
         // Grab the first.
@@ -279,7 +283,9 @@ EOXML;
         }
       }
 
-      $this->ingestDatastream($dc_datastream);
+      if (isset($dc_datastream->content)) {
+        $this->ingestDatastream($dc_datastream);
+      }
     }
 
     return $this['DC']->content;
@@ -293,7 +299,7 @@ EOXML;
    * @param FedoraDatastream $datastream
    *   The datastream to which we should add the metadata.
    */
-  protected function get_dc_from_general_source(FedoraDatastream $datastream) {
+  protected function get_dc_from_general_source(AbstractDatastream $datastream) {
     $meta = $this->object_info['.']['--METADATA--'];
 
     if ('xml' == pathinfo($meta->filename, PATHINFO_EXTENSION)) {
@@ -339,6 +345,7 @@ class IslandoraBookPageBatchObject extends IslandoraBookBookBatchObject {
     islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageNumber', (string) $this->sequence_number, TRUE);
     islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSection', '1', TRUE);
     islandora_book_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parent_id);
+    islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'preprocess', 'true', TRUE);
     // Add content model relationship.
     $this->models = 'islandora:pageCModel';
   }
