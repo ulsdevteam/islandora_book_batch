@@ -24,6 +24,7 @@ function islandora_book_batch_drush_command() {
           'to the objects. Only applies to the "book" level object.',
         'value' => 'optional',
       ),
+      /*
       'parent' => array(
         'description' => 'The collection to which the generated items should ' .
           'be added.  Only applies to the "book" level object. If ' .
@@ -32,6 +33,7 @@ function islandora_book_batch_drush_command() {
           'and itself is a PID, all books will be related to the given PID.',
         'value' => 'optional'
       ),
+      */
       'parent_relationship_uri' => array(
         'description' => 'The namespace URI of the relationship to the parent.' .
           ' Defaults to "info:fedora/fedora-system:def/relations-external#".',
@@ -45,19 +47,23 @@ function islandora_book_batch_drush_command() {
       'create_pdfs' => array(
         'description' => 'A flag to cause PDFs to be created in books. Page ' .
           'PDF creation is dependant on the configuration within Drupal ' .
-          'proper.'
-        'value' => 'optional'
+          'proper.',
+        'value' => 'optional',
       ),
       'email_admin' => array(
         'description' => 'A flag to notify the site admin when the book is ' .
-          'fully ingested.'
+          'fully ingested.',
         'value' => 'optional',
       ),
       'wait_for_metadata' => array(
         'description' => 'A flag to indicate that we should hold off on ' .
           'trying to ingest books until we have metadata available for them' .
-          'at the book level.'
+          'at the book level.',
         'value' => 'optional',
+      ),
+      'directory_dedup' => array(
+        'description' => 'A flag to indicate that we should avoid ' .
+          'repreprocessing books which are located in directories.',
       ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
@@ -72,12 +78,13 @@ function drush_islandora_book_batch_preprocess() {
   $parameters = array(
     'type' => drush_get_option('type'),
     'target' => drush_get_option('target'),
-    'parent' => drush_get_option('parent', NULL),
+    'parent' => drush_get_option('parent', 'islandora:bookCollection'),
     'parent_relationship_uri' => drush_get_option('parent_relationship_uri', 'info:fedora/fedora-system:def/relations-external#'),
     'parent_relationship_pred' => drush_get_option('parent_relationship_pred', 'isMemberOfCollection'),
     'create_pdfs' => drush_get_option('create_pdfs', FALSE),
     'email_admin' => drush_get_option('email_admin', FALSE),
     'wait_for_metadata' => drush_get_option('wait_for_metadata', FALSE),
+    'directory_dedup' => drush_get_option('directory_dedup', FALSE),
   );
 
   if ($content_models = drush_get_option('content_models', FALSE)) {

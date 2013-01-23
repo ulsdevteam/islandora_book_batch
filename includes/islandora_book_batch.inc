@@ -22,6 +22,41 @@ class IslandoraBookBatch extends IslandoraScanBatch {
     // We are not interested in files at the top level:
     unset($files['.']);
 
+    if ($this->parameters['wait_for_metadata']) {
+      $metadata_entries = array('MODS', 'DC', '--METADATA--');
+      $no_metadata = array();
+      foreach ($files as $key => $value) {
+        if (count(array_intersect(array_keys($value), $metadata_entries)) === 0) {
+          $no_metadata[$key] = $key;
+        }
+      }
+
+      $files = array_diff_key($files, $no_metadata);
+    }
+
+
+    if ($this->get_target_type() == 'directory' && $this->parameters['directory_dedup']) {
+      // Grab all entries starting with the target from the resources table.
+      $target = drupal_realpath($this->get_target());
+      $target_length = strlen($target);
+
+      $q = db_select('islandora_batch_resources', 'r')
+        ->fields('r')
+        ->condition('type', 'book_directory')
+        ->condition('resource', $target . '%', 'LIKE');
+
+      // Remove entries from the $files array which already exist in the resources table.
+      foreach ($q->execute() as $result) {
+        // Grab the relative path of the book resource entry.
+        $relative_path = substr($result->resource, $target_length + 1);
+
+        // Unset the entry from the array, if it exists.
+        if (isset($files[$relative_path])) {
+          unset($files[$relative_path]);
+        }
+      }
+    }
+
     return $files;
   }
 
@@ -49,7 +84,7 @@ class IslandoraBookBatch extends IslandoraScanBatch {
     $added = parent::preprocess();
 
     foreach ($added as $object) {
-      if ($object instanceof IslandoraBookBookBatchObject && !($object instanceof IslandoraBookPageBatchObject)) {
+      if ($object instanceof IslandoraBookBookBatchObject) {
         $children = db_select('islandora_batch_queue', 'q')
           ->fields('q', array('id'))
           ->condition('parent', $object->id);
@@ -75,33 +110,23 @@ class IslandoraBookBatch extends IslandoraScanBatch {
   }
 }
 
-class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
-  public function initial_batch_state() {
-    // Not ready until we've added the pages.
-    return ISLANDORA_BATCH_STATE__NOT_READY;
-  }
-
-  public function get_children(IslandoraTuque $connection) {
-    // Create page objects, return in an array.
-    $children = array();
-
-    foreach ($this->object_info as $sequence => $info) {
-      if ($sequence != '.') {
-        $children[] = new IslandoraBookPageBatchObject($connection, $this->id, $sequence, $info);
-      }
-    }
-
-    return $children;
-  }
-
+/**
+ * Each directory is an object. Each contained file is a datastream.
+ *
+ * Files are used "DSID.ext", and the extension is used to figure out the
+ * mimetype for the datastream.
+ * @todo Should be moved into islandora_batch.
+ */
+class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
   public function batch_process() {
     // Use object_info to create some datastreams.
-    $this->add_relationships();
     $this->label = $this->get_title();
     $this->get_mods();
     $this->get_dc();
 
     // Add other assets...
+
+    // XXX: This should be made into a constant or sommat?
     // Skip MODS and DC (and --METADATA--), 'cause they get handled in other functions.
     $skip = drupal_map_assoc(array('MODS', 'DC', '--METADATA--'));
 
@@ -116,13 +141,6 @@ class IslandoraBookBookBatchObject extends IslandoraScanBatchObject {
     }
 
     return ISLANDORA_BATCH_STATE__DONE;
-  }
-
-  protected function add_relationships() {
-    // Add relationship to collection.
-    $this->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:bookCollection');
-    // Add content model relationship.
-    $this->models = 'islandora:bookCModel';
   }
 
   protected function get_mods() {
@@ -316,11 +334,41 @@ EOXML;
   }
 }
 
-class IslandoraBookPageBatchObject extends IslandoraBookBookBatchObject {
+class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
+  public function __construct(IslandoraTuque $connection, $base_name, $object_info, $pp) {
+    parent::__construct($connection, $base_name, $object_info, $pp);
+
+    if ($pp['directory_dedup'] && $pp['type'] == 'directory') {
+      $this->resources['book_directory'] = array(
+        drupal_realpath($pp['target'] . '/' . $this->base_name),
+      );
+    }
+  }
+
+  public function initial_batch_state() {
+    // Not ready until we've added the pages.
+    return ISLANDORA_BATCH_STATE__NOT_READY;
+  }
+
+  public function get_children(IslandoraTuque $connection) {
+    // Create page objects, return in an array.
+    $children = array();
+
+    foreach ($this->object_info as $sequence => $info) {
+      if ($sequence != '.') {
+        $children[] = new IslandoraBookPageBatchObject($connection, $this->id, $sequence, $info, $this->preprocessor_parameters);
+      }
+    }
+
+    return $children;
+  }
+}
+
+class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
   protected $parent_id, $sequence_number;
 
-  public function __construct(IslandoraTuque $connection, $parent_id, $sequence, $object_info) {
-    parent::__construct($connection, "$parent_id-$sequence", $object_info);
+  public function __construct(IslandoraTuque $connection, $parent_id, $sequence, $object_info, $pp) {
+    parent::__construct($connection, "$parent_id-$sequence", $object_info, $pp);
 
     $this->parent_id = $parent_id;
     $this->sequence_number = $sequence;
@@ -333,10 +381,10 @@ class IslandoraBookPageBatchObject extends IslandoraBookBookBatchObject {
 
   public function initial_batch_state() {
     // Not ready.
-    return ISLANDORA_BATCH_STATE__DONE;
+    return ISLANDORA_BATCH_STATE__NOT_READY;
   }
 
-  protected function add_relationships() {
+  public function add_relationships() {
     module_load_include('inc', 'islandora_book', 'includes/utilities');
     // Add relationship to collection.
     $rels_ext = $this->relationships;
@@ -345,7 +393,6 @@ class IslandoraBookPageBatchObject extends IslandoraBookBookBatchObject {
     islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageNumber', (string) $this->sequence_number, TRUE);
     islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSection', '1', TRUE);
     islandora_book_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parent_id);
-    islandora_book_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'preprocess', 'true', TRUE);
     // Add content model relationship.
     $this->models = 'islandora:pageCModel';
   }
