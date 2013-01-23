@@ -362,6 +362,14 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
 
     return $children;
   }
+
+  public function add_relationships() {
+    parent::add_relationships();
+
+    if ($this->preprocessor_parameters['create_pdfs']) {
+      $this->relationships->add(ISLANDORA_BOOK_BATCH_FLAG_URI, 'create_pdf', 'true', TRUE);
+    }
+  }
 }
 
 class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
