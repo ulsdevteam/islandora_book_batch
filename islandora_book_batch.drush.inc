@@ -52,7 +52,7 @@ function islandora_book_batch_drush_command() {
       ),
       'email_admin' => array(
         'description' => 'A flag to notify the site admin when the book is ' .
-          'fully ingested.',
+          'fully ingested (depends on Rules being enabled).',
         'value' => 'optional',
       ),
       'wait_for_metadata' => array(
