@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Rules hook implementations.
+ */
+
+/**
  * Implements hook_rules_event_info().
  */
 function islandora_book_batch_rules_event_info() {

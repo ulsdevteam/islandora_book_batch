@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Implementation of classes from the batch ingest framework for books.
+ */
+
+/**
+ * Batch preprocessor.
+ */
 class IslandoraBookBatch extends IslandoraScanBatch {
   protected static function get_object_class() {
     return 'IslandoraBookBookBatchObject';

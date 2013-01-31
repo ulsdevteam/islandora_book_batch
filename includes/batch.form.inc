@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Form to kickoff a book batch ingest from the front-end.
+ */
+
+/**
  * Form building function.
  */
 function islandora_book_batch_form($form, &$form_state, $object) {
