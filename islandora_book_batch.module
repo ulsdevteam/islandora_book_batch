@@ -39,3 +39,39 @@ function islandora_book_batch_remove_pdf_flag($object, &$context) {
   $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'create_pdf', 'true', TRUE);
 }
 
+/**
+ * Implements hook_menu().
+ */
+function islandora_book_batch_menu() {
+  $items = array();
+
+  $items['islandora/object/%islandora_object/manage/collection/book_batch'] = array(
+    'title' => 'Book Batch',
+    'access callback' => 'islandora_book_batch_menu_access',
+    'access arguments' => array(2),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_book_batch_form', 2),
+    'file' => 'includes/batch.form.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  return $items;
+}
+
+/**
+ * Menu access callback.
+ */
+function islandora_book_batch_menu_access($object) {
+  if (!user_access(FEDORA_INGEST)) {
+    return FALSE;
+  }
+
+  $c = 'COLLECTION_POLICY';
+  if (isset($object[$c])) {
+    $cp = new CollectionPolicy($object[$c]->content);
+
+    return array_key_exists('islandora:bookCModel', $cp->getContentModels());
+  }
+
+  return FALSE;
+}

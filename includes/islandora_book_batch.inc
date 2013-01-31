@@ -154,15 +154,15 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
       if (isset($this->object_info['.']['MODS'])) {
         $mods_datastream->setContentFromFile($this->object_info['.']['MODS']->uri, FALSE);
       }
+      elseif (isset($this->object_info['.']['--METADATA--'])) {
+        // Detect type of contents, and transform.
+        $this->get_mods_from_general_source($mods_datastream);
+      }
       elseif (isset($this->object_info['.']['DC'])) {
         $mods_datastream->content = static::run_xsl_transform(array(
           'input' => file_get_contents($this->object_info['.']['DC']->uri),
           'xsl' => $dir . '/transforms/simpleDC2MODS.xsl',
         ));
-      }
-      elseif (isset($this->object_info['.']['--METADATA--'])) {
-        // Detect type of contents, and transform.
-        $this->get_mods_from_general_source($mods_datastream);
       }
 
       if (!isset($mods_datastream->content)) {
@@ -189,7 +189,7 @@ EOXML;
    * Transform from --METADATA--.{mrc,xml} to MODS.
    *
    * @param FedoraDatastream $datastream
-   *   
+   *
    */
   protected function get_mods_from_general_source(AbstractDatastream $datastream) {
     $meta = $this->object_info['.']['--METADATA--'];
@@ -281,7 +281,7 @@ EOXML;
       $dc_datastream->label = 'DC Record';
 
       if (isset($this->object_info['.']['DC'])) {
-        $dc_datastream->setContentFromFile($this->object_info['xml']->uri, FALSE);
+        $dc_datastream->setContentFromFile($this->object_info['.']['DC']->uri, FALSE);
       }
       elseif (isset($this->object_info['.']['--METADATA--'])) {
         // If --METADATA-- contains DC directly, use it.
