@@ -55,12 +55,12 @@ the "top" level (in the target directory or Zip file) represents a book. Book
 pages are their own directories inside of each book directory.
 Files are assigned to object datastreams based on their basename, so a folder
 structure like:
-my_cool_book/
---MODS.xml
---1/
-----OBJ.tiff
---2/
-----OBJ.tiff
+* my_cool_book/
+    * MODS.xml
+    * 1/
+        * OBJ.tiff
+    * 2/
+        * OBJ.tiff
 would result in a two-page book.
 
 A file named --METADATA--.xml can contain either MODS, DC or MARCXML which we
