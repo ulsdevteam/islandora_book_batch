@@ -61,6 +61,7 @@ structure like:
         * OBJ.tiff
     * 2/
         * OBJ.tiff
+
 would result in a two-page book.
 
 A file named --METADATA--.xml can contain either MODS, DC or MARCXML which we
@@ -68,8 +69,8 @@ will use to fill in the MODS or DC streams (if not provided explicitly).
 Similarly, --METADATA--.mrc (containing binary MARC) will be transformed to
 MODS and then possibly to DC, if neither are provided explicitly.
 
-If no MODS is provided at the book-level, the directory name will be used as
-the title.
+If no MODS is provided at the book-level--either directly as MODS.xml, or transformed from either a DC.xml or 
+the "--METADATA--" file discussed above--the directory name will be used as the title.
 
 The ingest of preprocessed items remains the same--something like:
 "drush -v --user=admin --uri=http://localhost islandora_batch_ingest"
