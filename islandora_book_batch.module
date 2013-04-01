@@ -32,6 +32,12 @@ function islandora_book_batch_islandora_bookCModel_islandora_object_ingested($ob
   }
 }
 
+function islandora_book_batch_islandora_pageCModel_islandora_object_ingested($object) {
+  if ($object->relationships->get(ISLANDORA_RELS_EXT_URI, 'generate_ocr', '', TRUE)) {
+    $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'generate_ocr', '', TRUE);
+  }
+}
+
 /**
  * A batch operation to remove the flag.
  */
