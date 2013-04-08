@@ -88,6 +88,7 @@ function drush_islandora_book_batch_preprocess() {
   $connection = islandora_get_tuque_connection();
   $parameters = array(
     'type' => drush_get_option('type'),
+    'namespace' => drush_get_option('namespace'),
     'target' => drush_get_option('target'),
     'parent' => drush_get_option('parent', 'islandora:bookCollection'),
     'parent_relationship_uri' => drush_get_option('parent_relationship_uri', 'info:fedora/fedora-system:def/relations-external#'),
