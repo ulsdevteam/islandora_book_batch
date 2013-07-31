@@ -10,6 +10,7 @@ env:
   - FEDORA_VERSION="3.6.2"
 before_install:
   - cd $HOME
+  - git clone -b 7.x git://github.com/Islandora/islandora.git
   - git clone -b 7.x git://github.com/Islandora/islandora_batch.git
   - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_book.git
   - export ISLANDORA_DIR=$HOME/islandora
