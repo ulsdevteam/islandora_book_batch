@@ -21,10 +21,10 @@ before_install:
   - ln -s $HOME/islandora_batch sites/all/modules/islandora_batch
   - ln -s $HOME/islandora_solution_pack_book sites/all/modules/islandora_solution_pack_book
   - ln -s $HOME/islandora_paged_content sites/all/modules/islandora_paged_content
-  - drush en --yes islandora_book_batch
+  - drush en --yes --user=1 islandora_book_batch
 script:
   - ant -buildfile sites/all/modules/islandora_book_batch/build.xml lint
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_book_batch
   - drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_book_batch
   - phpcpd --names *.module,*.inc,*.test sites/all/modules/islandora_book_batch
-  - drush test-run --uri=http://localhost:8081 "Islandora Bookmark Batch"
+  - drush test-run --uri=http://localhost:8081 "Islandora Book Batch"
