@@ -427,7 +427,14 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
    * Function construct.
    */
   public function __construct(IslandoraTuque $connection, $parent_id, $sequence, $object_info, $pp) {
-    parent::__construct($connection, "$parent_id-$sequence", $object_info, $pp);
+    
+    $label = "$parent_id-$sequence";
+    // Change the label of the page to the sequence number if variable is set.
+    if (variable_get('islandora_paged_content_page_label', FALSE)) {
+      $label = $sequence;
+    }
+
+    parent::__construct($connection, $label, $object_info, $pp);
 
     $this->parent_id = $parent_id;
     $this->sequence_number = $sequence;
