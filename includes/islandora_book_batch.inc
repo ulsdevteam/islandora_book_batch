@@ -5,10 +5,6 @@
  * Implementation of classes from the batch ingest framework for books.
  */
 
-// @codingStandardsIgnoreStart
-// This Whole file is ignored due to classes and methods are not camelcase and it
-// being called all over the place.  All of the other coding standards are met.
-
 /**
  * Batch preprocessor.
  */
@@ -427,7 +423,7 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
    * Function construct.
    */
   public function __construct(IslandoraTuque $connection, $parent_id, $sequence, $object_info, $pp) {
-    
+
     $label = "$parent_id-$sequence";
     // Change the label of the page to the sequence number if variable is set.
     if (variable_get('islandora_paged_content_page_label', FALSE)) {
@@ -480,4 +476,3 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
     }
   }
 }
-// @codingStandardsIgnoreEnd
