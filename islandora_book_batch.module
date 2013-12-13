@@ -40,7 +40,7 @@ function islandora_book_batch_islandora_bookCModel_islandora_object_ingested($ob
       // Start the batch, as it does not seem to be running.
       // XXX: Will this cause issues? If there's some other hook to run after,
       // there might be issues, no?
-      batch_process();
+      batchProcess();
     }
   }
 }
