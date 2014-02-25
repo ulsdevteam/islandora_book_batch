@@ -18,6 +18,7 @@ function islandora_book_batch_form($form, &$form_state, $object) {
     '#title' => t('Zip file'),
     '#description' => t('A Zip file containing a number of books. Each book is structured as a directory, containing a number of directories representing pages. Basenames will be used as datastream identifiers except or "--METADATA--". "--METADATA--" can be either a .xml containing XML (MODS, DC or MARCXML), or a .mrc (Binary MARC), which will be transformed to produce both a MODS and DC stream.'),
     '#required' => TRUE,
+    '#upload_location' => 'public://',
     '#upload_validators' => array(
       'file_validate_extensions' => array('zip'),
     ),
@@ -94,6 +95,10 @@ function islandora_book_batch_form_submit($form, $form_state) {
   );
 
   $preprocessor = new IslandoraBookBatch($connection, $parameters);
+  // XXX: We currently do not have a place where we remove usages, as we never
+  // really delete "sets" (or "items", for that matter)...  To come in the
+  // management side of things, in INT-192?
+  file_usage_add($target, 'islandora_batch', 'islandora_batch_set', $preprocessor->getSetId());
 
   if ($form_state['values']['ingest_set_immediately']) {
     islandora_batch_ingest(array(
