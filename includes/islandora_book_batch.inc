@@ -139,7 +139,7 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
    */
   public function batchProcess() {
     // Use object_info to create some datastreams.
-    $this->label = $this->get_title();
+    $this->label = $this->getTitle();
     $this->getMods();
     $this->getDc();
 
@@ -152,7 +152,7 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
     foreach (array_diff_key($this->objectInfo['.'], $skip) as $dsid => $obj) {
       $obj_datastream = $this->constructDatastream($dsid);
       // Figure out the mimetype.
-      $obj_datastream->mimetype = static::get_mime($obj);
+      $obj_datastream->mimetype = static::getMime($obj);
       $obj_datastream->label = "$dsid Datastream";
       $obj_datastream->setContentFromFile($obj->uri, FALSE);
 
@@ -459,11 +459,11 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
     module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
     // Add relationship to collection.
     $rels_ext = $this->relationships;
-    islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageOf', $this->parent_id);
+    islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageOf', $this->parentId);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', (string) $this->sequence_number, TRUE);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageNumber', (string) $this->sequence_number, TRUE);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSection', '1', TRUE);
-    islandora_paged_content_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parent_id);
+    islandora_paged_content_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parentId);
     // Add content model relationship.
     $this->models = 'islandora:pageCModel';
     if (isset($this->preprocessorParameters['generate_ocr'])) {
