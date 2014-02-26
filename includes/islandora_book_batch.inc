@@ -45,9 +45,9 @@ class IslandoraBookBatch extends IslandoraScanBatch {
       $files = array_diff_key($files, $no_metadata);
     }
 
-    if ($this->get_target_type() == 'directory' && $this->parameters['directory_dedup']) {
+    if ($this->getTargetType() == 'directory' && $this->parameters['directory_dedup']) {
       // Grab all entries starting with the target from the resources table.
-      $target = drupal_realpath($this->get_target());
+      $target = drupal_realpath($this->getTarget());
       $target_length = strlen($target);
 
       $q = db_select('islandora_batch_resources', 'r')
@@ -149,7 +149,7 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
     // functions.
     $skip = drupal_map_assoc(array('MODS', 'DC', '--METADATA--'));
 
-    foreach (array_diff_key($this->object_info['.'], $skip) as $dsid => $obj) {
+    foreach (array_diff_key($this->objectInfo['.'], $skip) as $dsid => $obj) {
       $obj_datastream = $this->constructDatastream($dsid);
       // Figure out the mimetype.
       $obj_datastream->mimetype = static::get_mime($obj);
@@ -173,16 +173,16 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
 
       $dir = drupal_get_path('module', 'islandora_batch');
 
-      if (isset($this->object_info['.']['MODS'])) {
-        $mods_datastream->setContentFromFile($this->object_info['.']['MODS']->uri, FALSE);
+      if (isset($this->objectInfo['.']['MODS'])) {
+        $mods_datastream->setContentFromFile($this->objectInfo['.']['MODS']->uri, FALSE);
       }
-      elseif (isset($this->object_info['.']['--METADATA--'])) {
+      elseif (isset($this->objectInfo['.']['--METADATA--'])) {
         // Detect type of contents, and transform.
         $this->getModsFromGeneralSource($mods_datastream);
       }
-      elseif (isset($this->object_info['.']['DC'])) {
-        $mods_datastream->content = static::run_xsl_transform(array(
-          'input' => file_get_contents($this->object_info['.']['DC']->uri),
+      elseif (isset($this->objectInfo['.']['DC'])) {
+        $mods_datastream->content = static::runXslTransform(array(
+          'input' => file_get_contents($this->objectInfo['.']['DC']->uri),
           'xsl' => $dir . '/transforms/simpleDC2MODS.xsl',
         ));
       }
@@ -190,7 +190,7 @@ class IslandoraFlatBatchObject extends IslandoraScanBatchObject {
       if (!isset($mods_datastream->content)) {
         // If we do not yet have any XML, create a dumb MODS with just the
         // title, and set it...
-        $title = $this->base_name;
+        $title = $this->baseName;
 
         $mods_datastream->content = <<<EOXML
 <mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns="http://www.loc.gov/mods/v3">
@@ -214,7 +214,7 @@ EOXML;
    *   The datastream
    */
   protected function getModsFromGeneralSource(AbstractDatastream $datastream) {
-    $meta = $this->object_info['.']['--METADATA--'];
+    $meta = $this->objectInfo['.']['--METADATA--'];
     $ext = strtolower(pathinfo($meta->filename, PATHINFO_EXTENSION));
     $dir = drupal_get_path('module', 'islandora_batch');
     if ($ext == 'xml') {
@@ -229,14 +229,14 @@ EOXML;
         }
         // MARCXML, transform to MODS and set.
         elseif ($s_xml->getName() == 'record') {
-          $datastream->content = static::run_xsl_transform(array(
+          $datastream->content = static::runXslTransform(array(
             'input' => $xml,
             'xsl' => $dir . '/transforms/MARC21slim2MODS3-4.xsl',
           ));
         }
         // DC, transform to MODS and set.
         elseif ($s_xml->getName() == 'dc') {
-          $datastream->content = static::run_xsl_transform(array(
+          $datastream->content = static::runXslTransform(array(
             'input' => $xml,
             'xsl' => $dir . '/transforms/simpleDC2MODS.xsl',
           ));
@@ -302,10 +302,10 @@ EOXML;
       $dc_datastream->mimetype = 'text/xml';
       $dc_datastream->label = 'DC Record';
 
-      if (isset($this->object_info['.']['DC'])) {
-        $dc_datastream->setContentFromFile($this->object_info['.']['DC']->uri, FALSE);
+      if (isset($this->objectInfo['.']['DC'])) {
+        $dc_datastream->setContentFromFile($this->objectInfo['.']['DC']->uri, FALSE);
       }
-      elseif (isset($this->object_info['.']['--METADATA--'])) {
+      elseif (isset($this->objectInfo['.']['--METADATA--'])) {
         // If --METADATA-- contains DC directly, use it.
         $this->getDcFromGeneralSource($dc_datastream);
       }
@@ -314,7 +314,7 @@ EOXML;
       if (!isset($dc_datastream->content)) {
         // XXX: Might want to make this use a file, instead of staging the DC
         // in the database table (inside the object we serialize).
-        $new_dc = static::run_xsl_transform(array(
+        $new_dc = static::runXslTransform(array(
           'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
           'input' => $this->getMods(),
         ));
@@ -340,7 +340,7 @@ EOXML;
    *   The datastream to which we should add the metadata.
    */
   protected function getDcFromGeneralSource(AbstractDatastream $datastream) {
-    $meta = $this->object_info['.']['--METADATA--'];
+    $meta = $this->objectInfo['.']['--METADATA--'];
 
     if ('xml' == pathinfo($meta->filename, PATHINFO_EXTENSION)) {
       $xml = file_get_contents($meta->uri);
@@ -368,7 +368,7 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
 
     if ($pp['directory_dedup'] && $pp['type'] == 'directory') {
       $this->resources['book_directory'] = array(
-        drupal_realpath($pp['target'] . '/' . $this->base_name),
+        drupal_realpath($pp['target'] . '/' . $this->baseName),
       );
     }
   }
@@ -387,9 +387,9 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
     // Create page objects, return in an array.
     $children = array();
 
-    foreach ($this->object_info as $sequence => $info) {
+    foreach ($this->objectInfo as $sequence => $info) {
       if ($sequence != '.') {
-        $children[] = new IslandoraBookPageBatchObject($connection, $this->id, $sequence, $info, $this->preprocessor_parameters);
+        $children[] = new IslandoraBookPageBatchObject($connection, $this->id, $sequence, $info, $this->preprocessorParameters);
       }
     }
 
@@ -402,11 +402,11 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
   public function addRelationships() {
     parent::addRelationships();
 
-    if ($this->preprocessor_parameters['create_pdfs']) {
+    if ($this->preprocessorParameters['create_pdfs']) {
       $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'create_pdf', 'true', TRUE);
     }
 
-    if ($this->preprocessor_parameters['email_admin']) {
+    if ($this->preprocessorParameters['email_admin']) {
       $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'email-admin-when-ingested', 'true', TRUE);
     }
   }
@@ -432,8 +432,8 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
 
     parent::__construct($connection, $label, $object_info, $pp);
 
-    $this->parent_id = $parent_id;
-    $this->sequence_number = $sequence;
+    $this->parentId = $parent_id;
+    $this->sequenceNumber = $sequence;
   }
 
   /**
@@ -466,8 +466,8 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
     islandora_paged_content_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parent_id);
     // Add content model relationship.
     $this->models = 'islandora:pageCModel';
-    if (isset($this->preprocessor_parameters['generate_ocr'])) {
-      if ($this->preprocessor_parameters['generate_ocr'] == TRUE) {
+    if (isset($this->preprocessorParameters['generate_ocr'])) {
+      if ($this->preprocessorParameters['generate_ocr'] == TRUE) {
         $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'generate_ocr', 'TRUE', TRUE);
       }
       else {
