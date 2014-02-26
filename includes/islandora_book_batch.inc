@@ -402,11 +402,11 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
   public function addRelationships() {
     parent::addRelationships();
 
-    if ($this->preprocessorParameters['create_pdfs']) {
+    if (isset($this->preprocessorParameters['create_pdfs']) && $this->preprocessorParameters['create_pdfs']) {
       $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'create_pdf', 'true', TRUE);
     }
 
-    if ($this->preprocessorParameters['email_admin']) {
+    if (isset($this->preprocessorParameters['email_admin']) && $this->preprocessorParameters['email_admin']) {
       $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'email-admin-when-ingested', 'true', TRUE);
     }
   }
