@@ -9,10 +9,6 @@
  */
 function islandora_book_batch_islandora_bookCModel_islandora_object_ingested($object) {
   if ($object->relationships->get(ISLANDORA_RELS_EXT_URI, 'book-batched', 'true', RELS_TYPE_PLAIN_LITERAL)) {
-    if (!isset($object['TN'])) {
-      module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-      islandora_paged_content_update_paged_content_thumbnail($object);
-    }
     if (module_exists('rules')) {
       // Allow rules to respond to this event. (To allow configurable messages
       // for mailing and such).
