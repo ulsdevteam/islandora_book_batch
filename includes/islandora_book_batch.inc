@@ -349,7 +349,7 @@ EOXML;
         $s_xml = new SimpleXMLElement($xml);
         if ($s_xml->getName() == 'dc') {
           // XXX: Should probably create a resource entry.
-          $dc_datastream->setContentFromFile($meta->uri, FALSE);
+          $datastream->setContentFromFile($meta->uri, FALSE);
         }
       }
     }
