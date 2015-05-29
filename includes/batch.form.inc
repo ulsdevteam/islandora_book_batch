@@ -29,6 +29,16 @@ function islandora_book_batch_form($form, &$form_state, $object) {
     '#value' => $object->id,
   );
 
+  $form['page_progression'] = array(
+    '#type' => 'radios',
+    '#title' => t('Page Progression'),
+    '#options' => array(
+      'lr' => t('Left-to-Right'),
+      'rl' => t('Right-to-Left'),
+    ),
+    '#default_value' => 'lr',
+  );
+
   $form['create_pdfs'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create PDFs?'),
@@ -68,7 +78,7 @@ function islandora_book_batch_form($form, &$form_state, $object) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Ingest'),
   );
 
   return $form;
