@@ -402,9 +402,13 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
   public function addRelationships() {
     parent::addRelationships();
     module_load_include('inc', 'islandora_paged_content', 'includes/derivatives');
+    module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
 
     if (isset($this->preprocessorParameters['create_pdfs']) && $this->preprocessorParameters['create_pdfs']) {
       islandora_paged_content_set_pdf_flag($this);
+    }
+    if (isset($this->preprocessorParameters['page_progression']) && $this->preprocessorParameters['page_progression']) {
+      islandora_paged_content_set_page_progression($this, $this->preprocessorParameters['page_progression']);
     }
     // Identify the source of this object.
     $this->relationships->add(ISLANDORA_RELS_EXT_URI, 'book-batched', 'true', RELS_TYPE_PLAIN_LITERAL);

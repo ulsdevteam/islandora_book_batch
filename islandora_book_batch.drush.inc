@@ -76,6 +76,10 @@ function islandora_book_batch_drush_command() {
         'description' => 'A flag to indicate that we should avoid ' .
         'repreprocessing books which are located in directories.',
       ),
+      'page_progression' => array(
+        'description' => 'A flag to indicate the page progression for the book. If not specified will default to LR.',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -104,6 +108,7 @@ function drush_islandora_book_batch_preprocess() {
     'email_admin' => drush_get_option('email_admin', FALSE),
     'wait_for_metadata' => drush_get_option('wait_for_metadata', FALSE),
     'directory_dedup' => drush_get_option('directory_dedup', FALSE),
+    'page_progression' => drush_get_option('page_progression', FALSE),
   );
 
   if ($content_models = drush_get_option('content_models', FALSE)) {
@@ -124,4 +129,16 @@ function drush_islandora_book_batch_preprocess() {
 
   // Pass the preprocessor off to run.
   $preprocessed = islandora_batch_handle_preprocessor($preprocessor);
+}
+
+/**
+ * Book batch preprocess validation.
+ */
+function drush_islandora_book_batch_preprocess_validate() {
+  $page_progression = drush_get_option('page_progression', FALSE);
+  if ($page_progression) {
+    if ($page_progression != 'lr' && $page_progression != 'rl') {
+      return drush_set_error('Invalid page progression parameter.', dt('The specified page progression of @progression is not valid. Only the values "lr" or "rl" can be used.', array('@progression' => $page_progression)));
+    }
+  }
 }
