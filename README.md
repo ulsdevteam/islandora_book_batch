@@ -1,8 +1,8 @@
-# Islandora Batch [![Build Status](https://travis-ci.org/Islandora/islandora_batch.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_batch)
+# Islandora Book Batch [![Build Status](https://travis-ci.org/Islandora/islandora_batch.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_batch)
 
 ## Introduction
 
-This module implements a batch framework, as well as a basic ZIP/directory ingester.
+This module implements a batch framework for importing books into Islandora.
 
 The ingest is a two-step process:
 
@@ -16,8 +16,8 @@ The ingest is a two-step process:
 
 This module requires the following modules/libraries:
 
-* [Islandora](https://github.com/islandora/islandora)
-* [Tuque](https://github.com/islandora/tuque)
+* [Islandora Batch](https://github.com/Islandora/islandora_batch)
+* [Book Solution Pack](https://github.com/Islandora/islandora_solution_pack_book)
 
 
 # Installation
