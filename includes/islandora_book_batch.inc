@@ -34,45 +34,45 @@ class IslandoraBookBatch extends IslandoraScanBatch {
     }
     // We are not interested in files at the top level:
     unset($files['.']);
-    if($numeric === TRUE) {
 
-      if ($this->parameters['wait_for_metadata']) {
-        $metadata_entries = array('MODS', 'DC', '--METADATA--');
-        $no_metadata = array();
-        foreach ($files as $key => $value) {
-          if (count(array_intersect(array_keys($value['.']), $metadata_entries)) === 0) {
-            $no_metadata[$key] = $key;
-          }
-        }
-
-        $files = array_diff_key($files, $no_metadata);
-      }
-
-      if ($this->getTargetType() == 'directory' && $this->parameters['directory_dedup']) {
-        // Grab all entries starting with the target from the resources table.
-        $target = drupal_realpath($this->getTarget());
-        $target_length = strlen($target);
-
-        $q = db_select('islandora_batch_resources', 'r')
-          ->fields('r')
-          ->condition('type', 'book_directory')
-          ->condition('resource', $target . '%', 'LIKE');
-
-        // Remove entries from the $files array which already exist in the
-        // resources table.
-        foreach ($q->execute() as $result) {
-          // Grab the relative path of the book resource entry.
-          $relative_path = substr($result->resource, $target_length + 1);
-
-          // Unset the entry from the array, if it exists.
-          if (isset($files[$relative_path])) {
-            unset($files[$relative_path]);
-          }
-        }
-      }
-      return $files;
+    // Check that the page numbers are numeric.
+    if ($numeric == FALSE) {
+      throw new Exception('Bad Batch. Page names must be numeric. Please ensure that directorys containing page items and page numbers only contain numeric values');
     }
-   throw new Exception('Bad Batch. Page names must be numeric.');
+
+    if ($this->parameters['wait_for_metadata']) {
+      $metadata_entries = array('MODS', 'DC', '--METADATA--');
+      $no_metadata = array();
+      foreach ($files as $key => $value) {
+        if (count(array_intersect(array_keys($value['.']), $metadata_entries)) === 0) {
+          $no_metadata[$key] = $key;
+        }
+      }
+      $files = array_diff_key($files, $no_metadata);
+    }
+
+    if ($this->getTargetType() == 'directory' && $this->parameters['directory_dedup']) {
+      // Grab all entries starting with the target from the resources table.
+      $target = drupal_realpath($this->getTarget());
+      $target_length = strlen($target);
+
+      $q = db_select('islandora_batch_resources', 'r')
+        ->fields('r')
+        ->condition('type', 'book_directory')
+        ->condition('resource', $target . '%', 'LIKE');
+
+      // Remove entries from the $files array which already exist in the
+      // resources table.
+      foreach ($q->execute() as $result) {
+        // Grab the relative path of the book resource entry.
+        $relative_path = substr($result->resource, $target_length + 1);
+        // Unset the entry from the array, if it exists.
+        if (isset($files[$relative_path])) {
+          unset($files[$relative_path]);
+        }
+      }
+    }
+    return $files;
   }
 
   /**
