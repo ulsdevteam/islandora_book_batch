@@ -30,8 +30,9 @@ class IslandoraBookBatch extends IslandoraScanBatch {
         // Check that the page numbers are numeric.
         throw new Exception('Bad Batch. Page numbers must be numeric, ensure the page directories only contain numeric values. Refer to the module read me https://github.com/Islandora/islandora_book_batch/blob/7.x/README.md');
       }
+      $this->reGroup($files, $components, $relative_uri, $file_info);
     }
-    $this->reGroup($files, $components, $relative_uri, $file_info);
+
     // We are not interested in files at the top level:
     unset($files['.']);
 
