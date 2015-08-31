@@ -55,6 +55,8 @@ Files are assigned to object datastreams based on their basename, so a folder st
 
 would result in a two-page book.
 
+Each directory name will be converted into a number to be used as the sequence number of the page created from it.
+
 A file named --METADATA--.xml can contain either MODS, DC or MARCXML which is used to fill in the MODS or DC streams (if not provided explicitly). Similarly, --METADATA--.mrc (containing binary MARC) will be transformed to MODS and then possibly to DC, if neither are provided explicitly.
 
 If no MODS is provided at the book level - either directly as MODS.xml, or transformed from either a DC.xml or the "--METADATA--" file discussed above - the directory name will be used as the title.
