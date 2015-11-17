@@ -407,6 +407,9 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
     if (isset($this->preprocessorParameters['create_pdfs']) && $this->preprocessorParameters['create_pdfs']) {
       islandora_paged_content_set_pdf_flag($this);
     }
+    if (isset($this->preprocessorParameters['aggregate_ocr']) && $this->preprocessorParameters['aggregate_ocr']) {
+      islandora_paged_content_set_ocr_flag($this);
+    }
     if (isset($this->preprocessorParameters['page_progression']) && $this->preprocessorParameters['page_progression']) {
       islandora_paged_content_set_page_progression($this, $this->preprocessorParameters['page_progression']);
     }
