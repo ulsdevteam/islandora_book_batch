@@ -228,7 +228,7 @@ EOXML;
           $datastream->setContentFromFile($meta->uri, FALSE);
         }
         // MARCXML, transform to MODS and set.
-        elseif ($s_xml->getName() == 'record') {
+        elseif (in_array($s_xml->getName(), array('record', 'collection'))) {
           $datastream->content = static::runXslTransform(array(
             'input' => $xml,
             'xsl' => $dir . '/transforms/MARC21slim2MODS3-4.xsl',
