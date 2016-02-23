@@ -84,6 +84,10 @@ function islandora_book_batch_drush_command() {
         'description' => 'A flag to indicate the page progression for the book. If not specified will default to LR.',
         'value' => 'optional',
       ),
+      'output_set_id' => array(
+        'description' => 'A flag to indicate whether to print the set ID of the preprocessed book.',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -134,6 +138,10 @@ function drush_islandora_book_batch_preprocess() {
 
   // Pass the preprocessor off to run.
   $preprocessed = islandora_batch_handle_preprocessor($preprocessor);
+
+  if (drush_get_option('output_set_id', FALSE)) {
+    drush_print($preprocessor->getSetId());
+  }
 }
 
 /**
