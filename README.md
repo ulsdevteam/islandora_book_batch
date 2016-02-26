@@ -32,7 +32,7 @@ N/A
 
 ## Documentation
 
-Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/How+to+Batch+Ingest+Files).
+Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+Book+Batch).
 
 ### Usage
 
@@ -80,7 +80,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Jared Whiklo](https://github.com/whikloj)
+* [Daniel Aitken](https://github.com/qadan)
 
 ## Development
 
