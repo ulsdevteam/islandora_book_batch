@@ -38,11 +38,18 @@ Further documentation for this module is available at [our wiki](https://wiki.du
 
 The base ZIP/directory preprocessor can be called as a drush script (see `drush help islandora_book_batch_preprocess` for additional parameters):
 
+Drush made the `target` parameter reserved as of Drush 7. To allow for backwards compatability this will be preserved.
+
+Drush 7 and above:
+
 `drush -v --user=admin --uri=http://localhost islandora_book_batch_preprocess --type=zip --scan_target=/path/to/archive.zip`
+
+Drush 6 and below:
+`drush -v --user=admin --uri=http://localhost islandora_book_batch_preprocess --type=zip --target=/path/to/archive.zip`
 
 This will populate the queue (stored in the Drupal database) with base entries.
 
-Books must be broken up into separate directories, such that each directory at the "top" level (in the scan_target directory or Zip file) represents a book. Book pages are their own directories inside of each book directory.
+Books must be broken up into separate directories, such that each directory at the "top" level (in the target directory or Zip file) represents a book. Book pages are their own directories inside of each book directory.
 
 Files are assigned to object datastreams based on their basename, so a folder structure like:
 
