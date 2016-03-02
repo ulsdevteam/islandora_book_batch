@@ -22,10 +22,6 @@ function islandora_book_batch_drush_command() {
         'description' => 'Either "directory" or "zip".',
         'required' => TRUE,
       ),
-      'scan_target' => array(
-        'description' => 'The target to directory or zip file to scan.',
-        'required' => TRUE,
-      ),
       'namespace' => array(
         'description' => 'The namespace for objects created by this command.  Defaults to namespce set in fedora config.',
         'required' => FALSE,
@@ -91,7 +87,22 @@ function islandora_book_batch_drush_command() {
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
-
+  // XXX: The target parameter became reserved in Drush 7 and above, for
+  // backwards compatibility both will be supported. Not using
+  // strict-option-handling (http://www.drush.org/en/master/strict-options) as
+  // it requires manual argument parsing.
+  if (drush_core_version() >= 7) {
+    $items['islandora_book_batch_preprocess']['options']['scan_target'] = array(
+      'description' => 'The target to directory or zip file to scan.',
+      'required' => TRUE,
+    );
+  }
+  else {
+    $items['islandora_book_batch_preprocess']['options']['target'] = array(
+      'description' => 'The target to directory or zip file to scan.',
+      'required' => TRUE,
+    );
+  }
   return $items;
 }
 
@@ -108,7 +119,7 @@ function drush_islandora_book_batch_preprocess() {
   $parameters = array(
     'type' => drush_get_option('type'),
     'namespace' => drush_get_option('namespace'),
-    'scan_target' => drush_get_option('scan_target'),
+    'target' => drush_core_version() >= 7 ? drush_get_option('scan_target') : drush_get_option('target'),
     'parent' => drush_get_option('parent', 'islandora:bookCollection'),
     'parent_relationship_uri' => drush_get_option('parent_relationship_uri', 'info:fedora/fedora-system:def/relations-external#'),
     'parent_relationship_pred' => drush_get_option('parent_relationship_pred', 'isMemberOfCollection'),
