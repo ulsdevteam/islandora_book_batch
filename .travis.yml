@@ -39,4 +39,3 @@ script:
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_book_batch
   - drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_book_batch
   - phpcpd --names *.module,*.inc,*.test sites/all/modules/islandora_book_batch
-  - drush test-run --uri=http://localhost:8081 "Islandora Book Batch"
