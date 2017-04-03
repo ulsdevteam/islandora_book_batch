@@ -80,6 +80,11 @@ function islandora_book_batch_drush_command() {
         'description' => 'A flag to indicate the page progression for the book. If not specified will default to LR.',
         'value' => 'optional',
       ),
+      'assign_pid' => array(
+        'description' => 'The full PID to assign to the object. If this value ' .
+        'is provided, the namespace option is not used.',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -109,6 +114,7 @@ function drush_islandora_book_batch_preprocess() {
     'wait_for_metadata' => drush_get_option('wait_for_metadata', FALSE),
     'directory_dedup' => drush_get_option('directory_dedup', FALSE),
     'page_progression' => drush_get_option('page_progression', FALSE),
+    'assign_pid' => drush_get_option('assign_pid', ''),
   );
 
   if ($content_models = drush_get_option('content_models', FALSE)) {
