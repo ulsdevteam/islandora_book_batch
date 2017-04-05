@@ -85,6 +85,15 @@ function islandora_book_batch_drush_command() {
         'is provided, the namespace option is not used.',
         'value' => 'optional',
       ),
+      'site' => array(
+        'description' => 'The site to which the generated items should ' .
+        'be added.',
+        'value' => 'optional',
+      ),
+      'site_relationship_pred' => array(
+        'description' => 'The predicate of the relationship to the site. ',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -115,6 +124,8 @@ function drush_islandora_book_batch_preprocess() {
     'directory_dedup' => drush_get_option('directory_dedup', FALSE),
     'page_progression' => drush_get_option('page_progression', FALSE),
     'assign_pid' => drush_get_option('assign_pid', ''),
+    'site' => drush_get_option('site', ''),
+    'site_relationship_pred' => drush_get_option('site_relationship_pred', ''),
   );
 
   if ($content_models = drush_get_option('content_models', FALSE)) {
