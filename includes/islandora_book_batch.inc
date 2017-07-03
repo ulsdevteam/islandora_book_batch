@@ -215,6 +215,7 @@ EOXML;
    */
   protected function getModsFromGeneralSource(AbstractDatastream $datastream) {
     $meta = $this->objectInfo['.']['--METADATA--'];
+
     $ext = strtolower(pathinfo($meta->filename, PATHINFO_EXTENSION));
     $dir = drupal_get_path('module', 'islandora_batch');
     if ($ext == 'xml') {
