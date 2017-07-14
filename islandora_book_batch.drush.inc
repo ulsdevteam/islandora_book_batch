@@ -84,6 +84,30 @@ function islandora_book_batch_drush_command() {
         'description' => 'A flag to indicate whether to print the set ID of the preprocessed book.',
         'value' => 'optional',
       ),
+      'overwrite_existing' => array(
+        'description' => 'If set, the system will check if object exists and purge it ' .
+        'before ingesting.  In all other cases, ingesting a batch that includes any ' .
+        'existing objects would fail.  NOTE:  Objects would be purged at the point in time ' .
+        'when a batch is scanned for ingest, not when the actual ingest set is processed.',
+        'value' => 'optional',
+      ),
+      'assign_pid' => array(
+        'description' => 'The PID value (including namespace) to assign to the object. If this value ' .
+        'is provided, the namespace value is ignored.',
+        'value' => 'optional',
+      ),
+      'relationship' => array(
+        'description' => 'An additional relationship to create.',
+        'value' => 'optional',
+      ),
+      'relationship_pred' => array(
+        'description' => 'The predicate of the relationship. ',
+        'value' => 'optional',
+      ),
+      'relationship_namespace' => array(
+        'description' => 'Namespace of additional relationship.',
+        'value' => 'optional',
+      ),
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
@@ -116,13 +140,10 @@ function drush_islandora_book_batch_preprocess() {
   // connection gets created should fix it.
   drupal_static_reset('islandora_get_tuque_connection');
   $connection = islandora_get_tuque_connection();
-  $parameters = array(
-    'type' => drush_get_option('type'),
-    'namespace' => drush_get_option('namespace'),
-    'target' => DRUSH_VERSION >= 7 ? drush_get_option('scan_target') : drush_get_option('target'),
-    'parent' => drush_get_option('parent', 'islandora:bookCollection'),
-    'parent_relationship_uri' => drush_get_option('parent_relationship_uri', 'info:fedora/fedora-system:def/relations-external#'),
-    'parent_relationship_pred' => drush_get_option('parent_relationship_pred', 'isMemberOfCollection'),
+
+  module_load_include('inc', 'islandora_batch', 'includes/common');
+  $base_parameters = islandora_batch_get_base_drush_parameters();
+  $book_batch_parameters = array(
     'create_pdfs' => drush_get_option('create_pdfs', FALSE),
     'aggregate_ocr' => drush_get_option('aggregate_ocr', FALSE),
     'email_admin' => drush_get_option('email_admin', FALSE),
@@ -130,6 +151,7 @@ function drush_islandora_book_batch_preprocess() {
     'directory_dedup' => drush_get_option('directory_dedup', FALSE),
     'page_progression' => drush_get_option('page_progression', FALSE),
   );
+  $parameters = array_merge($base_parameters, $book_batch_parameters);
 
   if ($content_models = drush_get_option('content_models', FALSE)) {
     $parameters['content_models'] = explode(',', $content_models);
