@@ -22,7 +22,7 @@ This module requires the following modules/libraries:
 * [Book Solution Pack](https://github.com/Islandora/islandora_solution_pack_book)
 
 
-# Installation
+## Installation
 
 Install module as usual, see [this](https://drupal.org/documentation/install/modules-themes/modules-7) for further information.
 
@@ -75,7 +75,7 @@ Each page directory name will be used as the sequence number of the page created
 
 A file named --METADATA--.xml can contain either MODS, DC or MARCXML which is used to fill in the MODS or DC streams (if not provided explicitly). Similarly, --METADATA--.mrc (containing binary MARC) will be transformed to MODS and then possibly to DC, if neither are provided explicitly.
 
-If no MODS is provided at the book level - either directly as MODS.xml, or transformed from either a DC.xml or the "--METADATA--" file discussed above - the directory name will be used as the title. 
+If no MODS is provided at the book level - either directly as MODS.xml, or transformed from either a DC.xml or the "--METADATA--" file discussed above - the directory name will be used as the title.
 
 Drush made the `target` parameter reserved as of Drush 7. To allow for backwards compatability this will be preserved.
 
@@ -112,7 +112,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Rosie Le Faive](https://github.com/rosiel)
+* [Jared Whiklo](https://github.com/whikloj)
 
 ## Development
 
