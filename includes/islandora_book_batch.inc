@@ -384,9 +384,20 @@ class IslandoraBookBookBatchObject extends IslandoraFlatBatchObject {
    * Function getChildren.
    */
   public function getChildren(IslandoraTuque $connection) {
+    // Get child content model based on parent.
+    if (!isset($this->preprocessorParameters['child_content_models'])) {
+      module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+      $child_models = array();
+      $paged_cmodels = islandora_paged_content_retrieve_applicable_cmodels();
+      foreach ($this->preprocessorParameters['content_models'] as $parent_model) {
+        if (isset($paged_cmodels[$parent_model]['children'])) {
+          $child_models = array_merge($child_models, array_keys($paged_cmodels[$parent_model]['children']));
+        }
+      }
+      $this->preprocessorParameters['child_content_models'] = array_unique($child_models);
+    }
     // Create page objects, return in an array.
     $children = array();
-
     foreach ($this->objectInfo as $sequence => $info) {
       if ($sequence != '.') {
         $children[] = new IslandoraBookPageBatchObject($connection, $this->id, $sequence, $info, $this->preprocessorParameters);
@@ -466,15 +477,23 @@ class IslandoraBookPageBatchObject extends IslandoraFlatBatchObject {
    */
   public function addRelationships() {
     module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-    // Add relationship to collection.
+    // Add parent relationships to child.
     $rels_ext = $this->relationships;
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageOf', $this->parentId);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', (string) $this->sequenceNumber, TRUE);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageNumber', (string) $this->sequenceNumber, TRUE);
     islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSection', '1', TRUE);
     islandora_paged_content_set_relationship($rels_ext, FEDORA_RELS_EXT_URI, 'isMemberOf', $this->parentId);
+
     // Add content model relationship.
-    $this->models = 'islandora:pageCModel';
+    if (isset($this->preprocessorParameters['child_content_models']) &&
+      !empty($this->preprocessorParameters['child_content_models'])) {
+      $this->models = $this->preprocessorParameters['child_content_models'];
+    }
+    else {
+      $this->models = 'islandora:pageCModel';
+    }
+
     // The existence of the generate_ocr and generate_hocr parameters are both
     // dependent on the existence of the islandora_ocr module, so only one
     // isset() is necessary.
